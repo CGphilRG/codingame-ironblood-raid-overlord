@@ -1,0 +1,84 @@
+read role:int maxRounds:int cols:int rows:int zoneCount:int heroCount:int tileCount:int recoverRate:int reinforcePower:int
+loop zoneCount read zoneId:int gx:int gy:int zoneType:int nNorth:int nEast:int nSouth:int nWest:int
+loop heroCount read initHeroId:int archetype:word(16) totalGems:int freeMove:int meleeTier:int rangedTier:int heroArmor:int exertMelee:int exertRanged:int
+loop tileCount read initTileId:int unitType:word(12) maxModels:int maxHp:int tileArmor:int atkPower:int atkRange:int movePts:int reinforceCost:int
+gameloop
+read round:int captiveState:int captiveZone:int overlordReserve:int overlordFatigue:int
+loop heroCount read heroId:int alive:int heroZone:int reserve:int fatigue:int wounds:int stance:int carrying:int
+loop tileCount read tileId:int slotCost:int tileState:int dredged:int aliveModels:int
+read activeEnemyCount:int
+loop activeEnemyCount read enemyId:int enemyTileId:int enemyZone:int enemyHp:int slumbering:int
+read poiCount:int
+loop poiCount read poiZone:int poiKind:int poiState:int
+write PASS
+
+STATEMENT
+Command the Overlord's Runic River and hordes to stop the Hero raid and protect your Sanctum and Captive!
+
+INPUT
+role: 1 for Overlord perspective
+maxRounds: Maximum number of rounds
+cols: Grid columns of zones
+rows: Grid rows of zones
+zoneCount: Total number of zones
+heroCount: Number of Heroes in raid party
+tileCount: Number of Overlord River tiles
+recoverRate: Overlord gems recovered per Overlord turn
+reinforcePower: Reinforcement points granted by EVENT tile
+zoneId: Unique zone index
+gx: Column index
+gy: Row index
+zoneType: 0=CLEARING, 1=HUT, 2=SANCTUM, 3=EXIT, 4=REINFORCEMENT
+nNorth: Connected north neighbor or -1
+nEast: Connected east neighbor or -1
+nSouth: Connected south neighbor or -1
+nWest: Connected west neighbor or -1
+initHeroId: Hero identifier
+archetype: BARBARIAN, SCOUT, MYSTIC, or HUNTRESS
+totalGems: Hero total gem pool
+freeMove: Hero free movement points in ACTIVE stance
+meleeTier: 0=None, 1=Yellow, 2=Orange, 3=Red
+rangedTier: 0=None, 1=Yellow, 2=Orange, 3=Red
+heroArmor: Hero passive armor
+exertMelee: Hero max gems per turn on MELEE
+exertRanged: Hero max gems per turn on RANGED
+initTileId: Overlord River tile ID
+unitType: GUARD, ARCHER, BEAST, BRUTE, BOSS, or EVENT
+maxModels: Maximum models linked to this tile
+maxHp: Max HP per model
+tileArmor: Armor per model
+atkPower: Attack damage dealt to Heroes
+atkRange: 1=Melee, 2=Ranged LoS
+movePts: Movement points per activation
+reinforceCost: Reinforcement point cost per model
+round: Current round (1..maxRounds)
+captiveState: 0=HIDDEN, 1=DROPPED, 2=CARRIED, 3=ESCAPED
+captiveZone: Exact hut zone while HIDDEN, or current zone/carrier hero ID
+overlordReserve: Overlord reserve gems before start-of-turn recovery
+overlordFatigue: Overlord fatigue gems before recovery
+heroId: Hero identifier
+alive: 1 if Hero is alive else 0
+heroZone: Current Hero zone ID
+reserve: Hero reserve gems
+fatigue: Hero fatigue gems
+wounds: Hero permanently lost gems
+stance: 0=ACTIVE, 1=REST
+carrying: 1 if carrying Captive else 0
+tileId: Overlord River tile ID
+slotCost: Current slot cost in River (1..tileCount), 0 if dredged
+tileState: 0=READY, 1=SLUMBERING, 2=DEAD
+dredged: 1 if permanently removed from River else 0
+aliveModels: Alive figures linked to tile
+activeEnemyCount: Number of alive enemy figures
+enemyId: Enemy figure ID
+enemyTileId: River tile ID owning this figure
+enemyZone: Enemy zone ID
+enemyHp: Remaining enemy HP
+slumbering: 1 if sleeping (0 Hindrance), 0 if awake
+poiCount: Number of Hut and Chest entries
+poiZone: Zone ID of point of interest
+poiKind: 0=HUT, 1=CHEST
+poiState: For HUT: 0=unsearched/1=searched; for CHEST: 1=available/0=looted
+
+OUTPUT
+Semicolon-separated commands on 1 line: [DREDGE <tileId>; ACTIVATE <tileId>; MOVE <enemyId> <zoneId>; ATTACK <enemyId> <heroId>; REINFORCE <tileId> <spawnZoneId> | PASS] [MSG <text>]

@@ -1,0 +1,22 @@
+target/
+*.class
+*.log
+*.jar
+.DS_Store
+.idea/
+*.iml
+
+# Private local reference solutions, hidden validators, and JUnit harness
+src/test/java/Solution.java
+src/test/java/com/codingame/game/*PuzzleTest.java
+pom-test.xml
+config/test5.json
+config/test6.json
+config/test7.json
+config/test8.json
+config/test9.json
+config/test10.json
+config/test11.json
+config/test12.json
+config/test13.json
+config/test14.json

@@ -1,0 +1,9 @@
+{
+  "title": {
+    "2": "4. Sanctum Chokepoint (Tier 2)",
+    "1": "4. Goulot du Sanctuaire (Niveau 2)"
+  },
+  "testIn": "305 2",
+  "isTest": "true",
+  "isValidator": "true"
+}

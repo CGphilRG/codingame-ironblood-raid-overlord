@@ -1,0 +1,87 @@
+<div class="statement-body">
+  <!-- GOAL -->
+  <div class="statement-section statement-goal">
+    <h1><span class="icon icon-goal">&nbsp;</span><span>Objectif</span></h1>
+    <div class="statement-goal-content">
+      Puzzle d'Optimisation Solo. Incarnez l'<b>Overlord</b> et ma&icirc;trisez votre <b>Rivi&egrave;re Runique</b> dans un village fortifi&eacute; en <b>Zones</b> : repoussez l'IA des H&eacute;ros, prot&eacute;gez le Boss et la Captive jusqu'au tour <var>maxRounds</var> (ou &eacute;liminez tous les H&eacute;ros), tout en maximisant les blessures inflig&eacute;es et votre r&eacute;serve de gemmes !
+    </div>
+  </div>
+
+  <!-- RULES -->
+  <div class="statement-section statement-rules">
+    <h1><span class="icon icon-rules">&nbsp;</span><span>R&egrave;gles</span></h1>
+    <div class="statement-rules-content">
+      <p>Chaque round dure jusqu'&agrave; <const>8</const> ou <const>9</const> rounds : l'<b>IA des H&eacute;ros</b> joue en premier, puis votre <b>Tour Overlord</b> s'ex&eacute;cute.</p>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">Zones, G&ecirc;ne &amp; Ligne de Vue</h3>
+      <ul>
+        <li>Vous connaissez d&egrave;s le tour <const>1</const> l'emplacement exact de la Captive (<var>captiveZone</var>).</li>
+        <li>Chaque ennemi &eacute;veill&eacute; bloque les H&eacute;ros par la <b>G&ecirc;ne</b> (<const>+1</const> co&ucirc;t de sortie par ennemi), et r&eacute;ciproquement pour vos troupes.</li>
+      </ul>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">Rivi&egrave;re Runique, Dragage &amp; Renforts</h3>
+      <ul>
+        <li>R&eacute;cup&eacute;ration en d&eacute;but de tour : jusqu'&agrave; <var>recoverRate</var> gemmes de <var>overlordFatigue</var> reviennent dans <var>overlordReserve</var>.</li>
+        <li><b>Activer (<const>0..2</const> tuiles/tour) :</b> <action>ACTIVATE <var>tileId</var></action> paie le co&ucirc;t de position (<const>1..tileCount</var>) et renvoie la tuile tout &agrave; droite, d&eacute;calant les autres vers la gauche.</li>
+        <li><b>Drager (<const>2</const> gemmes) :</b> <action>DREDGE <var>tileId</var></action> retire d&eacute;finitivement une tuile morte (<var>tileState</var> = <const>2</const>), lib&eacute;rant la Rivi&egrave;re mais emp&ecirc;chant ses renforts.</li>
+        <li><b>EVENT &amp; Renforts :</b> activer <const>EVENT</const> octroie <var>reinforcePower</var> points pour r&eacute;invoquer des sbires sur une zone <var>zoneType</var> = <const>4</const> via <action>REINFORCE <var>tileId</var> <var>spawnZoneId</var></action>.</li>
+      </ul>
+
+      <!-- VICTORY CONDITIONS -->
+      <div class="statement-victory-conditions">
+        <div class="icon victory"></div>
+        <div class="blk">
+          <div class="title">Conditions de Victoire</div>
+          <div class="text">
+            <ul style="padding-bottom:0">
+              <li>&Eacute;liminer tous les H&eacute;ros ou tenir jusqu'&agrave; la fin du round <var>maxRounds</var>.</li>
+              <li><b>Score :</b> <const>1000</const> + <const>35</const>&times;blessures + <const>350</const>&times;H&eacute;ros morts + <const>250</const> (Boss vivant) + bonus Captive (<const>200</const>/<const>100</const>) + <const>15</const>&times;r&eacute;serve finale.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEFEAT CONDITIONS -->
+      <div class="statement-lose-conditions">
+        <div class="icon lose"></div>
+        <div class="blk">
+          <div class="title">Conditions de D&eacute;faite</div>
+          <div class="text">
+            <ul style="padding-bottom:0">
+              <li>Les H&eacute;ros tuent le Boss et s'enfuient avec la Captive, ou timeout / commande malform&eacute;e.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROTOCOL -->
+  <div class="statement-section statement-protocol">
+    <h1><span class="icon icon-protocol">&nbsp;</span><span>Entr&eacute;es / Sorties</span></h1>
+    <div class="blk">
+      <div class="title">Entr&eacute;es d'initialisation &amp; de tour</div>
+      <div class="text">
+        <p><span class="statement-lineno">Initialisation :</span> <var>role</var>, <var>maxRounds</var>, <var>cols</var>, <var>rows</var>, <var>zoneCount</var>, <var>heroCount</var>, <var>tileCount</var>, <var>recoverRate</var>, <var>reinforcePower</var>, suivis des lignes Zones, H&eacute;ros et Tuiles.</p>
+        <p><span class="statement-lineno">Tour :</span> <var>round</var>, <var>captiveState</var>, <var>captiveZone</var>, <var>overlordReserve</var>, <var>overlordFatigue</var>, puis H&eacute;ros, Tuiles de Rivi&egrave;re, Ennemis actifs et Points d'int&eacute;r&ecirc;t.</p>
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Sortie pour un tour</div>
+      <div class="text">
+        <p><span class="statement-lineno">Une seule ligne</span> s&eacute;par&eacute;e par des points-virgules :</p>
+        <ul>
+          <li><action>DREDGE <var>tileId</var></action>, <action>ACTIVATE <var>tileId</var></action>, <action>MOVE <var>enemyId</var> <var>zoneId</var></action>, <action>ATTACK <var>enemyId</var> <var>heroId</var></action>, <action>REINFORCE <var>tileId</var> <var>spawnZoneId</var></action>, <action>PASS</action></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREDITS -->
+  <div class="statement-section statement-credits">
+    <h1><span class="icon icon-credits">&nbsp;</span><span>Cr&eacute;dits</span></h1>
+    <div class="text">
+      M&eacute;caniques inspir&eacute;es du jeu de plateau <i>Conan</i> (<b>Monolith Board Games</b>, cr&eacute;&eacute; par <b>Fr&eacute;d&eacute;ric Henry</b>). Assets graphiques 100 % CC0 1.0 Universal par <b>Kenney.nl</b> et SDK <b>CodinGame Game Engine</b>.
+    </div>
+  </div>
+</div>

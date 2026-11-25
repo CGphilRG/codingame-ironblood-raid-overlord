@@ -1,0 +1,123 @@
+<div class="statement-body">
+  <!-- GOAL -->
+  <div class="statement-section statement-goal">
+    <h1><span class="icon icon-goal">&nbsp;</span><span>The Goal</span></h1>
+    <div class="statement-goal-content">
+      Solo Optimization puzzle. Command the dark <b>Overlord</b> and your tactical <b>Runic River</b> across a fortified village of interconnected <b>Zones</b>: repel the raiding Hero AI squad, guard your Sanctum Boss and secret Captive until <var>maxRounds</var> rounds expire (or eliminate every Hero), and maximize damage, Hero eliminations, and gem efficiency!
+    </div>
+  </div>
+
+  <!-- RULES -->
+  <div class="statement-section statement-rules">
+    <h1><span class="icon icon-rules">&nbsp;</span><span>Rules</span></h1>
+    <div class="statement-rules-content">
+      <p>The siege plays over <const>8</const> or <const>9</const> rounds. Each round, the <b>Hero AI squad acts first</b>, then your <b>Overlord Turn</b> executes.</p>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">Zones, Line of Sight &amp; Hindrance</h3>
+      <ul>
+        <li>The board consists of <var>zoneCount</var> planar <b>Zones</b> linked by orthogonal passages (<const>nNorth</const>, <const>nEast</const>, <const>nSouth</const>, <const>nWest</const>; <const>-1</const> means a blocked wall).</li>
+        <li>You know the exact hidden Captive location (<var>captiveZone</var>) from round <const>1</const>, whereas the Hero AI must discover it by searching Huts.</li>
+        <li><b>Line of Sight (LoS):</b> Valid for range-<const>2</const> attacks (<const>ARCHER</const>, <const>BOSS</const>) if same zone, adjacent neighbor, or via one shared non-Hut zone <var>mid</var> when target is not a Hut (<var>zoneType</var> = <const>1</const>).</li>
+        <li><b>Hindrance:</b> Leaving a zone with <var>H</var> alive Heroes costs an enemy <const>1</const> + <var>H</var> movement points. Conversely, every awake enemy in a Hero's zone adds <const>+1</const> movement cost when that Hero tries to leave!</li>
+      </ul>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">The Runic River Conveyor &amp; Overlord Economy</h3>
+      <ul>
+        <li>At the start of your Overlord turn, recover up to <var>recoverRate</var> gems from <var>overlordFatigue</var> into <var>overlordReserve</var>.</li>
+        <li><b>Activate (<const>0..2</const> tiles per turn):</b> Use <action>ACTIVATE <var>tileId</var></action> to pay the tile's current 1-based <var>slotCost</var> (<const>1..riverLength</var>) from <var>overlordReserve</var>. The activated tile shifts to the <b>rightmost</b> (costliest) slot, sliding all tiles behind it <const>1</const> slot left (cheaper)!</li>
+        <li>Slumbering tiles (<var>tileState</var> = <const>1</const>) wake immediately upon activation. Defeated tiles (<var>tileState</var> = <const>2</const>) cannot be activated, but clog the River until removed or reinforced.</li>
+        <li><b>Dredging (<const>2</const> gems):</b> Use <action>DREDGE <var>tileId</var></action> on any defeated tile (<var>tileState</var> = <const>2</const>) to permanently remove it from the River for <const>2</const> gems—sliding remaining tiles left, at the cost of never reinforcing that tile again.</li>
+        <li><b>EVENT &amp; Reinforcements:</b> Activating the <const>EVENT</const> tile grants <var>reinforcePower</var> reinforcement points for that turn. Spend them with <action>REINFORCE <var>tileId</var> <var>spawnZoneId</var></action> to return slain minions (<var>reinforceCost</var> each) onto any Reinforcement zone (<var>zoneType</var> = <const>4</const>).</li>
+      </ul>
+
+      <h3 style="font-size: 16px; font-weight: 700; padding-top: 10px">Unexecutable Actions &amp; Viewer</h3>
+      <ul>
+        <li>Valid-syntax commands whose target or budget fails (activating a <const>3</const>rd tile, dredging an alive tile, attacking out of LoS) are safely ignored.</li>
+        <li>Use the viewer's <b>RENDER MODE</b> toggle to switch between <b>RPG SPRITES</b> and <b>GEOMETRIC DEBUG</b>.</li>
+      </ul>
+
+      <!-- VICTORY CONDITIONS -->
+      <div class="statement-victory-conditions">
+        <div class="icon victory"></div>
+        <div class="blk">
+          <div class="title">Victory Conditions</div>
+          <div class="text">
+            <ul style="padding-bottom:0">
+              <li>Eliminate all Heroes or prevent them from escaping with both the Captive and the Boss slain by the end of round <var>maxRounds</var>.</li>
+              <li><b>Score Criterion:</b> <const>1000</const> + <const>35</const>&times;Hero wounds + <const>350</const>&times;Heroes slain + <const>250</const> (Boss alive) + Captive security bonus (<const>200</const> hidden / <const>100</const> dropped) + <const>15</const>&times;remaining Overlord reserve.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEFEAT CONDITIONS -->
+      <div class="statement-lose-conditions">
+        <div class="icon lose"></div>
+        <div class="blk">
+          <div class="title">Defeat Conditions</div>
+          <div class="text">
+            <ul style="padding-bottom:0">
+              <li>The Hero AI kills your Sanctum Boss and escapes through the Exit carrying the Captive.</li>
+              <li>Your program times out or outputs an invalid / malformed command.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROTOCOL -->
+  <div class="statement-section statement-protocol">
+    <h1><span class="icon icon-protocol">&nbsp;</span><span>Game Input</span></h1>
+    <div class="blk">
+      <div class="title">Initialization Input</div>
+      <div class="text">
+        <p><span class="statement-lineno">Line 1:</span> 9 space-separated integers <var>role</var>, <var>maxRounds</var>, <var>cols</var>, <var>rows</var>, <var>zoneCount</var>, <var>heroCount</var>, <var>tileCount</var>, <var>recoverRate</var>, <var>reinforcePower</var>.</p>
+        <p><span class="statement-lineno">Next <var>zoneCount</var> lines:</span> 8 space-separated integers <var>zoneId</var>, <var>gx</var>, <var>gy</var>, <var>zoneType</var>, <var>nNorth</var>, <var>nEast</var>, <var>nSouth</var>, <var>nWest</var>.</p>
+        <p><span class="statement-lineno">Next <var>heroCount</var> lines:</span> 9 space-separated values <var>initHeroId</var>, <var>archetype</var>, <var>totalGems</var>, <var>freeMove</var>, <var>meleeTier</var>, <var>rangedTier</var>, <var>heroArmor</var>, <var>exertMelee</var>, <var>exertRanged</var>.</p>
+        <p><span class="statement-lineno">Next <var>tileCount</var> lines:</span> 9 space-separated values <var>initTileId</var>, <var>unitType</var>, <var>maxModels</var>, <var>maxHp</var>, <var>tileArmor</var>, <var>atkPower</var>, <var>atkRange</var>, <var>movePts</var>, <var>reinforceCost</var>.</p>
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Input for One Game Turn</div>
+      <div class="text">
+        <p><span class="statement-lineno">Line 1:</span> 5 space-separated integers <var>round</var>, <var>captiveState</var>, <var>captiveZone</var> (exact hut ID when hidden), <var>overlordReserve</var> (before start-of-turn recovery), <var>overlordFatigue</var>.</p>
+        <p><span class="statement-lineno">Next <var>heroCount</var> lines:</span> 8 space-separated integers <var>heroId</var>, <var>alive</var>, <var>heroZone</var>, <var>reserve</var>, <var>fatigue</var>, <var>wounds</var>, <var>stance</var>, <var>carrying</var>.</p>
+        <p><span class="statement-lineno">Next <var>tileCount</var> lines:</span> 5 space-separated integers <var>tileId</var>, <var>slotCost</var>, <var>tileState</var>, <var>dredged</var>, <var>aliveModels</var>.</p>
+        <p><span class="statement-lineno">Next line:</span> <var>activeEnemyCount</var>, followed by <var>activeEnemyCount</var> lines of 5 integers: <var>enemyId</var>, <var>enemyTileId</var>, <var>enemyZone</var>, <var>enemyHp</var>, <var>slumbering</var>.</p>
+        <p><span class="statement-lineno">Next line:</span> <var>poiCount</var>, followed by <var>poiCount</var> lines of 3 integers: <var>poiZone</var>, <var>poiKind</var>, <var>poiState</var>.</p>
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Output for One Game Turn</div>
+      <div class="text">
+        <p><span class="statement-lineno">A single line</span> containing semicolon-separated commands executed in order:</p>
+        <ul>
+          <li><action>DREDGE <var>tileId</var></action> (<const>2</const> gems) to permanently remove a dead tile from the River.</li>
+          <li><action>ACTIVATE <var>tileId</var></action> (<const>slotCost</var> gems, max <const>2</const>/turn) to ready all models of a tile or trigger <const>EVENT</const>.</li>
+          <li><action>MOVE <var>enemyId</var> <var>zoneId</var></action> to move an activated enemy one connected zone.</li>
+          <li><action>ATTACK <var>enemyId</var> <var>heroId</var></action> to strike a Hero in range/LoS.</li>
+          <li><action>REINFORCE <var>tileId</var> <var>spawnZoneId</var></action> to respawn a slain minion onto a <const>zoneType=4</const> zone.</li>
+          <li><action>PASS</action> to hold reserve gems without acting.</li>
+        </ul>
+        <p>Example: <action>DREDGE 0; ACTIVATE 2; MOVE 4 5; ATTACK 4 0; MSG Ambush!</action></p>
+      </div>
+    </div>
+    <div class="blk">
+      <div class="title">Constraints</div>
+      <div class="text">
+        <const>12</const> &le; <var>zoneCount</var> &le; <const>16</const>, <const>2</const> &le; <var>heroCount</var> &le; <const>3</const>, <const>6</const> &le; <var>tileCount</var> &le; <const>8</const><br>
+        <const>8</const> &le; <var>maxRounds</var> &le; <const>9</const><br>
+        Response time first turn &le; <const>1000</const> ms, per turn &le; <const>50</const> ms
+      </div>
+    </div>
+  </div>
+
+  <!-- CREDITS -->
+  <div class="statement-section statement-credits">
+    <h1><span class="icon icon-credits">&nbsp;</span><span>Credits</span></h1>
+    <div class="text">
+      Asymmetric Zone, Stamina Gem Pool, Wound Attrition, and River Conveyor mechanics are inspired by the board game <i>Conan</i> (<b>Monolith Board Games</b>, designed by <b>Fr&eacute;d&eacute;ric Henry</b>). All graphic assets are 100% CC0 1.0 Universal from <b>Kenney.nl</b> (<i>Tiny Dungeon</i> &amp; <i>Roguelike/RPG Pack</i>). Built with the <b>CodinGame Game Engine SDK</b>.
+    </div>
+  </div>
+</div>
